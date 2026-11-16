@@ -254,4 +254,4 @@ function createWarrior(element, outfit, isPlayer) {
       new THREE.BoxGeometry(0.14, 0.65, 0.72),
       new THREE.MeshBasicMaterial({ color: 0x38bdf8 })
     );
-  
+      
