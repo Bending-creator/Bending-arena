@@ -9,95 +9,113 @@
   <link rel="manifest" href="manifest.json" />
   <title>Elemental Bending Arena: Agni Kai</title>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-user-select: none; }
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-user-select: none; touch-action: manipulation; }
     body, html { width: 100%; height: 100%; overflow: hidden; background: #0c0c10; font-family: 'Segoe UI', Roboto, sans-serif; color: #f4f4f5; }
     #gameCanvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; z-index: 1; }
 
     /* Lobby & Character Select Screen */
     #menuOverlay {
       position: fixed; inset: 0; z-index: 20;
-      background: radial-gradient(circle at center, rgba(28, 25, 23, 0.88), rgba(9, 9, 11, 0.98));
-      display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 16px; overflow-y: auto;
+      background: radial-gradient(circle at center, rgba(28, 25, 23, 0.92), rgba(9, 9, 11, 0.99));
+      display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+      padding: 16px 14px 32px; overflow-y: auto; -webkit-overflow-scrolling: touch;
     }
-    .title { font-size: clamp(1.5rem, 4vw, 2.5rem); font-weight: 900; letter-spacing: 2px; text-transform: uppercase; color: #fbbf24; text-shadow: 0 4px 20px rgba(245, 158, 11, 0.5); text-align: center; }
-    .subtitle { font-size: 0.9rem; color: #a1a1aa; margin-bottom: 14px; text-align: center; }
-    .panel { background: rgba(24, 24, 27, 0.9); border: 1px solid #3f3f46; border-radius: 14px; padding: 14px; width: 100%; max-width: 720px; margin-bottom: 12px; }
-    .panel h3 { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; color: #d4d4d8; margin-bottom: 8px; }
-    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .title { font-size: clamp(1.4rem, 4.5vw, 2.4rem); font-weight: 900; letter-spacing: 2px; text-transform: uppercase; color: #fbbf24; text-shadow: 0 4px 20px rgba(245, 158, 11, 0.5); text-align: center; margin-top: 6px; }
+    .subtitle { font-size: 0.85rem; color: #a1a1aa; margin-bottom: 12px; text-align: center; }
+    .panel { background: rgba(24, 24, 27, 0.95); border: 1px solid #3f3f46; border-radius: 14px; padding: 12px; width: 100%; max-width: 720px; margin-bottom: 10px; }
+    .panel h3 { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 1px; color: #d4d4d8; margin-bottom: 8px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
     .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
     .opt-btn {
-      background: #27272a; border: 2px solid #3f3f46; border-radius: 10px; padding: 10px 6px;
-      color: #e4e4e7; font-weight: 700; font-size: 0.85rem; cursor: pointer; text-align: center; transition: 0.15s;
+      background: #27272a; border: 2px solid #3f3f46; border-radius: 10px; padding: 10px 4px;
+      color: #e4e4e7; font-weight: 700; font-size: 0.8rem; cursor: pointer; text-align: center; transition: 0.12s;
     }
-    .opt-btn.active { border-color: #fbbf24; background: #422006; color: #fef08a; transform: scale(1.02); }
+    .opt-btn:active { transform: scale(0.96); }
+    .opt-btn.active { border-color: #fbbf24; background: #422006; color: #fef08a; }
     .el-earth.active { border-color: #22c55e; background: #052e16; color: #bbf7d0; }
     .el-fire.active { border-color: #ef4444; background: #450a0a; color: #fecaca; }
     .el-water.active { border-color: #3b82f6; background: #172554; color: #bfdbfe; }
     .el-air.active { border-color: #f59e0b; background: #451a03; color: #fde68a; }
+
+    .room-row { display: flex; gap: 8px; margin-top: 8px; }
+    .room-input {
+      flex: 1; background: #18181b; border: 1px solid #52525b; border-radius: 8px; padding: 8px 10px;
+      color: #fff; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; font-size: 0.85rem;
+    }
+    .mini-btn {
+      background: #2563eb; border: none; border-radius: 8px; padding: 8px 12px; color: #fff;
+      font-weight: 800; font-size: 0.8rem; cursor: pointer;
+    }
+    #roomStatus { font-size: 0.78rem; color: #38bdf8; margin-top: 6px; min-height: 16px; }
+
     .start-btn {
       width: 100%; max-width: 720px; padding: 14px; border: none; border-radius: 12px;
-      background: linear-gradient(135deg, #dc2626, #ea580c); color: #fff; font-size: 1.1rem; font-weight: 900;
+      background: linear-gradient(135deg, #dc2626, #ea580c); color: #fff; font-size: 1.05rem; font-weight: 900;
       letter-spacing: 1.5px; text-transform: uppercase; cursor: pointer; box-shadow: 0 6px 24px rgba(220, 38, 38, 0.45);
+      margin-top: 4px;
     }
+    .start-btn:active { transform: scale(0.98); }
 
     /* Battle HUD */
     #hud { position: fixed; inset: 0; z-index: 10; pointer-events: none; display: none; }
     .top-hud {
-      position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
-      width: 92%; max-width: 680px; display: flex; flex-direction: column; align-items: center; gap: 6px;
+      position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
+      width: 94%; max-width: 680px; display: flex; flex-direction: column; align-items: center; gap: 5px;
     }
-    .round-banner { font-size: 0.75rem; font-weight: 800; letter-spacing: 2px; color: #fbbf24; background: rgba(0,0,0,0.65); padding: 3px 12px; border-radius: 20px; border: 1px solid #52525b; }
-    .bars-row { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-    .fighter-box { flex: 1; background: rgba(9, 9, 11, 0.75); padding: 6px 8px; border-radius: 8px; border: 1px solid #3f3f46; }
-    .fighter-meta { display: flex; justify-content: space-between; font-size: 0.75rem; font-weight: 700; margin-bottom: 4px; }
-    .hp-track { width: 100%; height: 10px; background: #27272a; border-radius: 5px; overflow: hidden; margin-bottom: 4px; }
-    .hp-fill { height: 100%; width: 100%; background: linear-gradient(90deg, #16a34a, #4ade80); transition: width 0.15s; }
+    .round-banner { font-size: 0.72rem; font-weight: 800; letter-spacing: 2px; color: #fbbf24; background: rgba(0,0,0,0.72); padding: 3px 12px; border-radius: 20px; border: 1px solid #52525b; }
+    .bars-row { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .fighter-box { flex: 1; background: rgba(9, 9, 11, 0.78); padding: 6px 8px; border-radius: 8px; border: 1px solid #3f3f46; }
+    .fighter-meta { display: flex; justify-content: space-between; font-size: 0.72rem; font-weight: 700; margin-bottom: 4px; }
+    .hp-track { width: 100%; height: 9px; background: #27272a; border-radius: 5px; overflow: hidden; margin-bottom: 4px; }
+    .hp-fill { height: 100%; width: 100%; background: linear-gradient(90deg, #16a34a, #4ade80); transition: width 0.12s; }
     .chi-track { width: 100%; height: 5px; background: #18181b; border-radius: 3px; overflow: hidden; }
-    .chi-fill { height: 100%; width: 100%; background: #38bdf8; transition: width 0.1s; }
+    .chi-fill { height: 100%; width: 100%; background: #38bdf8; transition: width 0.08s; }
     .diamonds { display: flex; gap: 4px; margin-top: 4px; }
-    .diamond { width: 10px; height: 10px; transform: rotate(45deg); border: 1px solid #fbbf24; background: transparent; }
+    .diamond { width: 9px; height: 9px; transform: rotate(45deg); border: 1px solid #fbbf24; background: transparent; }
     .diamond.won { background: #fbbf24; box-shadow: 0 0 6px #fbbf24; }
 
-    /* Top Right Audio & Menu Controls */
-    .top-actions { position: absolute; top: 10px; right: 12px; display: flex; gap: 6px; pointer-events: auto; }
-    .icon-btn { background: rgba(24,24,27,0.85); border: 1px solid #52525b; color: #fff; border-radius: 8px; padding: 6px 10px; font-size: 0.75rem; font-weight: 700; cursor: pointer; }
+    /* Top Right Audio, Mic & Menu Controls */
+    .top-actions { position: absolute; top: 8px; right: 10px; display: flex; gap: 6px; pointer-events: auto; z-index: 15; }
+    .icon-btn { background: rgba(24,24,27,0.88); border: 1px solid #52525b; color: #fff; border-radius: 8px; padding: 6px 9px; font-size: 0.72rem; font-weight: 700; cursor: pointer; }
+    .icon-btn.mic-on { border-color: #22c55e; background: #052e16; color: #86efac; }
 
     /* Center Announcements */
     #announce {
       position: absolute; top: 34%; left: 50%; transform: translate(-50%, -50%);
-      font-size: clamp(1.6rem, 5vw, 3rem); font-weight: 900; text-transform: uppercase; letter-spacing: 3px;
-      color: #fef08a; text-shadow: 0 4px 25px rgba(0,0,0,0.9); text-align: center; opacity: 0; transition: opacity 0.25s;
+      font-size: clamp(1.5rem, 5vw, 2.8rem); font-weight: 900; text-transform: uppercase; letter-spacing: 3px;
+      color: #fef08a; text-shadow: 0 4px 25px rgba(0,0,0,0.95); text-align: center; opacity: 0; transition: opacity 0.25s;
     }
 
     /* Mobile Touch Controls */
     #joystickZone {
-      position: absolute; bottom: 24px; left: 24px; width: 120px; height: 120px;
-      border-radius: 50%; background: rgba(255, 255, 255, 0.08); border: 2px solid rgba(255, 255, 255, 0.22);
+      position: absolute; bottom: 22px; left: 20px; width: 118px; height: 118px;
+      border-radius: 50%; background: rgba(255, 255, 255, 0.09); border: 2px solid rgba(255, 255, 255, 0.25);
       pointer-events: auto; touch-action: none;
     }
     #joystickKnob {
-      position: absolute; top: 50%; left: 50%; width: 48px; height: 48px;
-      margin: -24px 0 0 -24px; border-radius: 50%; background: rgba(251, 191, 36, 0.75);
-      box-shadow: 0 0 12px rgba(251, 191, 36, 0.5);
+      position: absolute; top: 50%; left: 50%; width: 46px; height: 46px;
+      margin: -23px 0 0 -23px; border-radius: 50%; background: rgba(251, 191, 36, 0.8);
+      box-shadow: 0 0 12px rgba(251, 191, 36, 0.55); pointer-events: none;
     }
     .ability-pad {
-      position: absolute; bottom: 22px; right: 20px; display: grid; grid-template-columns: repeat(2, 64px); gap: 10px;
+      position: absolute; bottom: 20px; right: 18px; display: grid; grid-template-columns: repeat(2, 64px); gap: 10px;
       pointer-events: auto;
     }
     .ab-btn {
-      width: 64px; height: 64px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.35);
-      background: rgba(24, 24, 27, 0.78); color: #fff; font-weight: 800; font-size: 0.72rem;
+      width: 64px; height: 64px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.38);
+      background: rgba(24, 24, 27, 0.82); color: #fff; font-weight: 800; font-size: 0.68rem;
       display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; position: relative; overflow: hidden;
     }
-    .ab-btn span { font-size: 0.62rem; color: #a1a1aa; }
-    .ab-ult { border-color: #f59e0b; background: rgba(120, 53, 15, 0.85); }
-    .cd-mask { position: absolute; bottom: 0; left: 0; right: 0; height: 0%; background: rgba(0,0,0,0.68); pointer-events: none; }
+    .ab-btn:active { transform: scale(0.93); }
+    .ab-btn span { font-size: 0.58rem; color: #a1a1aa; }
+    .ab-ult { border-color: #f59e0b; background: rgba(120, 53, 15, 0.88); }
+    .cd-mask { position: absolute; bottom: 0; left: 0; right: 0; height: 0%; background: rgba(0,0,0,0.7); pointer-events: none; }
 
     /* Match Over Modal */
     #endModal {
-      position: fixed; inset: 0; z-index: 30; background: rgba(0,0,0,0.82);
-      display: none; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+      position: fixed; inset: 0; z-index: 30; background: rgba(0,0,0,0.85);
+      display: none; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 20px;
     }
   </style>
 </head>
@@ -107,65 +125,41 @@
   <!-- Character & Arena Select -->
   <div id="menuOverlay">
     <div class="title">Elemental Bending Arena</div>
-    <div class="subtitle">Choose Your Discipline, Outfits & Arena Atmosphere</div>
+    <div class="subtitle">Choose Your Discipline, Outfits, Arena & Mode</div>
 
     <div class="panel">
       <h3>1. Select Elemental Discipline</h3>
       <div class="grid-4" id="elementGroup">
-        <button class="opt-btn el-earth active" data-val="earth">🪨 EARTH<br><small>Toph / Bumi</small></button>
-        <button class="opt-btn el-fire" data-val="fire">🔥 FIRE<br><small>Iroh / Zuko</small></button>
-        <button class="opt-btn el-water" data-val="water">🌊 WATER<br><small>Katara / Korra</small></button>
-        <button class="opt-btn el-air" data-val="air">🌪️ AIR<br><small>Aang / Roku</small></button>
+        <button type="button" class="opt-btn el-earth active" data-val="earth">🪨 EARTH<br><small>Toph / Bumi</small></button>
+        <button type="button" class="opt-btn el-fire" data-val="fire">🔥 FIRE<br><small>Iroh / Zuko</small></button>
+        <button type="button" class="opt-btn el-water" data-val="water">🌊 WATER<br><small>Katara / Korra</small></button>
+        <button type="button" class="opt-btn el-air" data-val="air">🌪️ AIR<br><small>Aang / Roku</small></button>
       </div>
     </div>
 
     <div class="panel">
       <h3>2. Martial-Arts Outfit Style</h3>
       <div class="grid-2" id="outfitGroup">
-        <button class="opt-btn active" data-val="bare">🥋 Bare-Chested Sparring Trousers</button>
-        <button class="opt-btn" data-val="tunic">👘 Traditional Layered Tunic</button>
+        <button type="button" class="opt-btn active" data-val="bare">🥋 Bare-Chested Sparring Trousers</button>
+        <button type="button" class="opt-btn" data-val="tunic">👘 Traditional Layered Tunic</button>
       </div>
     </div>
 
     <div class="panel">
       <h3>3. Arena Theme & AI Difficulty</h3>
       <div class="grid-2" style="margin-bottom:8px;" id="arenaGroup">
-        <button class="opt-btn active" data-val="stadium">☀️ Sunlit Pro Stadium</button>
-        <button class="opt-btn" data-val="agni_kai">🔥 Twilight Agni Kai</button>
+        <button type="button" class="opt-btn active" data-val="stadium">☀️ Sunlit Pro Stadium</button>
+        <button type="button" class="opt-btn" data-val="agni_kai">🔥 Twilight Agni Kai</button>
       </div>
       <div class="grid-3" id="diffGroup">
-        <button class="opt-btn" data-val="novice">Novice AI</button>
-        <button class="opt-btn active" data-val="master">Master AI</button>
-        <button class="opt-btn" data-val="avatar">Avatar State AI</button>
+        <button type="button" class="opt-btn" data-val="novice">Novice AI</button>
+        <button type="button" class="opt-btn active" data-val="master">Master AI</button>
+        <button type="button" class="opt-btn" data-val="avatar">Avatar State AI</button>
       </div>
     </div>
 
-    <button class="start-btn" id="startBtn">Enter Arena (Best of 5)</button>
-  </div>
-
-  <!-- Active Combat HUD -->
-  <div id="hud">
-    <div class="top-hud">
-      <div class="round-banner" id="roundBanner">BEST OF 5 • ROUND 1</div>
-      <div class="bars-row">
-        <div class="fighter-box">
-          <div class="fighter-meta"><span id="pName">YOU (EARTH)</span><span id="pHpText">100</span></div>
-          <div class="hp-track"><div class="hp-fill" id="pHpBar"></div></div>
-          <div class="chi-track"><div class="chi-fill" id="pChiBar"></div></div>
-          <div class="diamonds" id="pRounds"><div class="diamond"></div><div class="diamond"></div><div class="diamond"></div></div>
-        </div>
-        <div class="fighter-box">
-          <div class="fighter-meta"><span id="aiName">RIVAL (FIRE)</span><span id="aiHpText">100</span></div>
-          <div class="hp-track"><div class="hp-fill" id="aiHpBar"></div></div>
-          <div class="chi-track"><div class="chi-fill" id="aiChiBar"></div></div>
-          <div class="diamonds" id="aiRounds"><div class="diamond"></div><div class="diamond"></div><div class="diamond"></div></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="top-actions">
-      <button class="icon-btn" id="musicToggle">🎵 Music: ON</button>
-      <button class="icon-btn" id="exitBtn">Exit</button>
-    </div>
-
-  
+    <div class="panel">
+      <h3>4. Play With Friends (Online / Hotspot Room Code)</h3>
+      <div class="room-row">
+        <button type="button" class="mini-btn" id="createRoomBtn">Create Room</button>
+        
