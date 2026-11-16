@@ -1,0 +1,10 @@
+{
+  "name": "Elemental Bending Arena: Agni Kai",
+  "short_name": "Bending Arena",
+  "description": "3D Realistic Elemental Bending & Agni Kai Duel Arena",
+  "start_url": "/",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#0c0c10",
+  "theme_color": "#b91c1c"
+}
